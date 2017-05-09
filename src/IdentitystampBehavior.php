@@ -9,8 +9,9 @@
 
 namespace jlorente\behaviors;
 
-use yii\base\InvalidCallException;
 use yii\db\BaseActiveRecord;
+use yii\base\InvalidCallException;
+use yii\behaviors\AttributeBehavior;
 
 /**
  * IdentitystampBehavior automatically fills the specified attributes with the current identitystamp.
