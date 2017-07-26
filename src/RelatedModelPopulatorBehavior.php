@@ -231,7 +231,7 @@ class RelatedModelPopulatorBehavior extends Behavior {
      */
     public function ensureRelatedMap($refresh = false) {
         if ($this->_relatedMap === null || $refresh = true) {
-            
+            $this->setRelations($this->relations);
         }
     }
 
