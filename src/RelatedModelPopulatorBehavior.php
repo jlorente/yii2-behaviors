@@ -99,7 +99,8 @@ class RelatedModelPopulatorBehavior extends Behavior {
     public function validateRelatedModels() {
         $valid = true;
         $this->ensureRelatedMap();
-        foreach ($this->_relatedMap as $relation => $relatedData) {
+        foreach ($this->_relatedMap as $relation => $_) {
+            /* @var $related \yii\db\ActiveRecord */
             $related = $this->owner->$relation;
             if ($related->validate() === false) {
                 $valid = false;
@@ -114,8 +115,7 @@ class RelatedModelPopulatorBehavior extends Behavior {
     }
 
     /**
-     * Internal trait method that performs the save operation on the related 
-     * models.
+     * Saves the related models.
      * 
      * @see \yii\db\ActiveRecord::save()
      */
@@ -132,17 +132,18 @@ class RelatedModelPopulatorBehavior extends Behavior {
             $attributes = [];
             $this->ensureRelatedMap();
             foreach ($this->_relatedMap as $relation => $relatedData) {
+                /* @var $related \yii\db\ActiveRecord */
                 $related = $this->owner->$relation;
                 if ($related) {
                     if ($related->save($runValidation, $attributeNames) === false) {
-                        throw new Exception('Unable to save ' . get_class($related) . '. Errors: [' . Json::encode($related->getErrors()) . ']');
+                        throw new \yii\db\Exception('Unable to save ' . get_class($related) . '. Errors: [' . Json::encode($related->getErrors()) . ']');
                     }
                     $this->owner->{$relatedData['fk']} = $related->getPrimaryKey();
                     $attributes[] = $relatedData['fk'];
                 }
             }
             if ($this->owner->updateAttributes($attributeNames) === false) {
-                throw new Exception('Unable to update attributes from ' . get_class($this->owner));
+                throw new \yii\db\Exception('Unable to update attributes from ' . get_class($this->owner));
             }
             $trans->commit();
             return true;
@@ -155,17 +156,28 @@ class RelatedModelPopulatorBehavior extends Behavior {
     }
 
     /**
-     * Internal trait method that performs the load operation of the related 
-     * models.
+     * Loads the related models data from a data source. This method is useful 
+     * when submitting a form with related model data. You can override the load 
+     * method of the model and call it inside it like this.
+     * 
+     * ```php
+     * public function load($data, $formName = null) {
+     *     if (parent::load($data, $formName) === true) {
+     *         return $this->loadRelatedModels($data, $formName);
+     *     } else {
+     *         return false;
+     *     }
+     * }
+     * ```
      * 
      * @see \yii\db\ActiveRecord::load()
      */
-    public function relatedModelLoad($data, $formName = null) {
+    public function loadRelatedModels($data, $formName = null) {
         if (parent::load($data, $formName) === true) {
             $this->ensureRelatedMap();
             $scope = $formName === null ? $this->formName() : $formName;
-            foreach ($this->_relatedMap as $relation => $relationData) {
-                $this->loadRelatedModel($data, $scope, $relation, $relationData['fk'], $relationData['class']);
+            foreach ($this->_relatedMap as $relation => $_) {
+                $this->loadRelatedModel($relation, $data, $scope);
             }
             return true;
         } else {
@@ -174,22 +186,33 @@ class RelatedModelPopulatorBehavior extends Behavior {
     }
 
     /**
-     * Loads the related model data.
+     * Loads a particular related model data from a data source.
      * 
+     * ```php
+     * public function load($data, $formName = null) {
+     *     if (parent::load($data, $formName) === true) {
+     *         return $this->loadRelatedModels($data, $formName);
+     *     } else {
+     *         return false;
+     *     }
+     * }
+     * ```
+     *      * 
      * @param array $data
      * @param string $scope
-     * @param string $modelClass
      * @return boolean
      */
-    public function loadRelatedModel($data, $scope, $relation, $modelClass) {
+    public function loadRelatedModel($relation, $data, $scope) {
+        $this->ensureRelatedMap();
+        /* @var $model \yii\db\ActiveRecord */
         $model = $this->owner->$relation;
         if (!$model) {
+            $modelClass = $this->_relatedMap[$relation]['class'];
             $model = new $modelClass();
             $model->loadDefaultValues();
             $this->owner->populateRelation($relation, $model);
         }
         if ($scope === '' && !empty($data) && isset($data[$model->formName()])) {
-            /* @var $model \yii\db\ActiveRecord */
             $model->setAttributes($data[$model->formName()]);
             return true;
         } elseif (isset($data[$scope][$model->formName()])) {
