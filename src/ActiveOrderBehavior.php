@@ -24,7 +24,7 @@ use yii\db\Exception;
  * You may specify an active record model to use this behavior like so:
  * 
  * ```php
- * use custom\behaviors\ActiveOrderBehavior;
+ * use jlorente\behaviors\ActiveOrderBehavior;
  * 
  * class Post {
  *     public function behaviors() {
