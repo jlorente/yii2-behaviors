@@ -102,7 +102,7 @@ class RelatedModelPopulatorBehavior extends Behavior {
         foreach ($this->_relatedMap as $relation => $_) {
             /* @var $related \yii\db\ActiveRecord */
             $related = $this->owner->$relation;
-            if ($related->validate() === false) {
+            if ($related && $related->validate() === false) {
                 $valid = false;
                 foreach ($related->getErrors() as $attribute => $errors) {
                     foreach ($errors as $error) {
