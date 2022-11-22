@@ -1,7 +1,7 @@
 {
     "name": "jlorente/yii2-behaviors",
     "description": "A compilation of useful behaviors for the Yii2 framework.",
-    "keywords": ["yii2", "behaviors", "order", "enhanced"],
+    "keywords": ["yii2", "behaviors", "order", "enhanced", "uuid"],
     "homepage": "https://github.com/jlorente/yii2-behaviors",
     "type": "yii2-extension",
     "license": "MIT",
@@ -11,6 +11,9 @@
             "email": "jose.lorente.martin@gmail.com"
         }
     ],
+    "require": {
+        "ramsey/uuid": "^4.2.2"
+    },
     "autoload": {
         "psr-4": {
             "jlorente\\behaviors\\": "src/"
